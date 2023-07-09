@@ -1,0 +1,35 @@
+target Python
+
+reactor Sensor {
+    output out
+    timer t(/*offset*/0 msec, /*period*/100 msec)
+    state s(0)
+    reaction(t) -> out {=
+        out.set(self.s)
+        self.s += 1
+    =}
+}
+
+reactor Processor {
+    input inp
+    output out
+    reaction(inp) -> out {=
+        out.set(inp.value * 2)
+    =}
+}
+
+reactor Printer {
+    input inp
+    reaction(inp) {=
+        print(inp.value)
+    =}
+}
+
+main reactor {
+    s = new Sensor()
+    p = new Processor()
+    pr = new Printer()
+    s.out -> p.inp
+    p.out -> pr.inp
+}
+

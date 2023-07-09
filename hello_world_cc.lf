@@ -1,0 +1,34 @@
+target C
+
+reactor Sensor {
+    output out:int8_t
+    timer t(/*offset*/0 msec, /*period*/100 msec)
+    state s:int32_t(0)
+    reaction(t) -> out {=
+        lf_set(out, self->s++);
+    =}
+}
+
+reactor Processor {
+    input inp:int8_t
+    output out:int8_t
+    reaction(inp) -> out {=
+        lf_set(out, inp->value);
+    =}
+}
+
+reactor Printer {
+    input inp:int8_t
+    reaction(inp) {=
+        printf("%d\n", inp->value);
+    =}
+}
+
+main reactor {
+    s = new Sensor()
+    p = new Processor()
+    pr = new Printer()
+    s.out -> p.inp
+    p.out -> pr.inp
+}
+
