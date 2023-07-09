@@ -1,19 +1,21 @@
 target C
 
-reactor Sensor {
+reactor Sensor(period:time(100 msec)) {
     output out:int8_t
-    timer t(/*offset*/0 msec, /*period*/100 msec)
+    timer t(/*offset*/0 msec, period)
     state s:int32_t(0)
     reaction(t) -> out {=
+        printf("Firing %d\n", self->period);
         lf_set(out, self->s++);
     =}
 }
 
 reactor Processor {
-    input inp:int8_t
+    input inp_1:int8_t
+    input inp_2:int8_t
     output out:int8_t
-    reaction(inp) -> out {=
-        lf_set(out, inp->value);
+    reaction(inp_1, inp_2) -> out {=
+        lf_set(out, inp_1->value + inp_2->value);
     =}
 }
 
@@ -25,10 +27,16 @@ reactor Printer {
 }
 
 main reactor {
-    s = new Sensor()
-    p = new Processor()
-    pr = new Printer()
-    s.out -> p.inp
-    p.out -> pr.inp
+    sensor_1 = new Sensor(period = 1 sec)
+    // Processor will be fired only when the two sensors 
+    // fire at the same logical time -> logical simultaneity
+    // change to `501 msec` to make the the processor fire
+    // every time a sensor changes (until they match again)
+    sensor_2 = new Sensor(period = 500 msec)
+    processor = new Processor()
+    printer = new Printer()
+    sensor_1.out -> processor.inp_1
+    sensor_2.out -> processor.inp_2
+    processor.out -> printer.inp
 }
 

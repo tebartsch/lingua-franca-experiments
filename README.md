@@ -1,3 +1,3 @@
 # lingua-franca-hello-world
 
-play around with lingua france
+play around with lingua franca
